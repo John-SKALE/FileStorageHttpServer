@@ -9,6 +9,17 @@
 </body>
 
 <script type="text/javascript">
+	/*
+		loads the root directory
+		- if that item is a file, allow the user to download that file
+		- if that item is a directory
+			- onclick
+				- hide old directory files
+				- display bread crumbs (/my/folder/destination)
+				- display subfiles
+
+	*/
+
 	window.addEventListener("load", (e)=>{
 		const rootEl = document.querySelector("#root")
 
