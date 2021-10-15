@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Title of the document</title>
+</head>
+
+<body>
+	<div id="root"></div>
+</body>
+
+<script type="text/javascript">
+	window.addEventListener("load", (e)=>{
+		const rootEl = document.querySelector("#root")
+
+		fetch("/directory?directorypath=" + encodeURI("/")).then((response)=>{
+			return response.text().then((text)=>{
+				if(!response.ok){
+					throw text
+				}
+				else return text;
+			})
+		}).then((value)=>{
+			console.log(value)
+			loadDir(rootEl, JSON.parse(value));
+		}).catch((error)=>{
+			console.error(error)
+		})
+
+	})
+
+	function loadDir(element, json){
+		var ul = document.createElement("ul");
+		json.forEach((folderItem)=>{
+			var li = document.createElement("li");
+			li.textContent = folderItem.name;
+			ul.appendChild(li);
+		})
+		element.appendChild(ul);
+	}
+</script>
+
+</html>
