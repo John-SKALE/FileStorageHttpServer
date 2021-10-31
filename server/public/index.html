@@ -23,7 +23,13 @@
 	window.addEventListener("load", (e)=>{
 		const rootEl = document.querySelector("#root")
 
-		fetch("/directory?directorypath=" + encodeURI("/")).then((response)=>{
+		loadDir(rootEl, "/")
+
+	})
+
+	function loadDir(element, path){
+
+		fetch("/directory?directorypath=" + encodeURI(path)).then((response)=>{
 			return response.text().then((text)=>{
 				if(!response.ok){
 					throw text
@@ -32,21 +38,198 @@
 			})
 		}).then((value)=>{
 			console.log(value)
-			loadDir(rootEl, JSON.parse(value));
+			const json = JSON.parse(value);
+			var ul = document.createElement("ul");
+
+			var createFolder = document.createElement("li");
+	 		var folderInput = document.createElement("input");
+			folderInput.type="text";
+			createFolder.appendChild(folderInput);
+			var createFolderTitle = document.createElement("h3");
+			var createFolderA = document.createElement("a")
+			createFolderA.textContent = "Create Folder"
+			createFolderA.href = "#"
+			createFolderTitle.appendChild(createFolderA);
+			createFolder.appendChild(createFolderTitle)
+			ul.appendChild(createFolder)
+			createFolderA.addEventListener("click", (e)=>{
+				e.preventDefault();
+				console.log("create folder")
+				var formData = new FormData();
+
+				var createPath = path.split("/");
+				createPath.shift();
+				createPath = createPath.join("/")
+
+				formData.append("directorypath", createPath + "/" + folderInput.value)
+				fetch("/directory", {
+					method: "POST",
+					body: formData
+				}).then((response)=>{
+					return response.text().then((text)=>{
+						if(!response.ok){
+							throw text
+						}
+						else return text;
+					})
+				}).then((value)=>{
+					console.log(value)
+					element.innerHTML = "";
+					loadDir(element, path)
+				}).catch((error)=>{
+					console.error(error)
+				})
+			})
+
+
+			var createFile = document.createElement("li");
+			var createFileTitle = document.createElement("h3");
+
+			var fileInput = document.createElement("input");
+			fileInput.type="file";
+
+			fileInput.addEventListener("change", (e)=>{
+				console.log("value:", fileInput.value);
+				console.log("files:", fileInput.files);
+			})
+			createFile.appendChild(fileInput);
+			var createFileTitle = document.createElement("h3");
+			var createFileA = document.createElement("a")
+			createFileA.textContent = "Create File"
+			createFileA.href = "#"
+			createFileTitle.appendChild(createFileA);
+			createFile.appendChild(createFileTitle)
+			ul.appendChild(createFile)
+			createFileA.addEventListener("click", (e)=>{
+				e.preventDefault();
+				console.log("create file")
+				var formData = new FormData();
+
+				var createPath = path.split("/");
+				createPath.shift();
+				createPath = createPath.join("/")
+				console.log(fileInput);
+				formData.append("file", fileInput.files[0])
+				formData.append("filepath", createPath + "/" + fileInput.files[0].name)
+				fetch("/file", {
+					method: "POST",
+					body: formData
+				}).then((response)=>{
+					return response.text().then((text)=>{
+						if(!response.ok){
+							throw text
+						}
+						else return text;
+					})
+				}).then((value)=>{
+					console.log(value)
+					element.innerHTML = "";
+					loadDir(element, path)
+				}).catch((error)=>{
+					console.error(error)
+				})
+			})
+
+
+
+			// const li = document.createElement("li");
+			// li.textContent("delete folder");
+			// ul.appendChild(li);
+
+			json.forEach((folderItem)=>{
+				var li = document.createElement("li");
+				var h3 = document.createElement("h3")
+				h3.textContent = folderItem.name;
+				li.appendChild(h3);
+
+				var deleteDiv = document.createElement("div");
+				var deleteA = document.createElement("a");
+				deleteDiv.appendChild(deleteA);
+				deleteA.href = "#";
+				if(!folderItem.isFile){
+
+					var openDiv = document.createElement("div");
+					li.appendChild(openDiv)
+					var openA = document.createElement("a");
+					openA.href = "#";
+					openA.textContent = "load folder";
+					openDiv.appendChild(openA);
+
+					console.log(folderItem.storagePath);
+
+					openA.addEventListener("click", (e)=>{
+						openDiv.removeChild(openA);
+						loadDir(openDiv, folderItem.storagePath)
+					})
+
+					deleteA.textContent = "open folder";
+
+
+					deleteA.addEventListener("click", (e)=>{
+						e.preventDefault();
+						const body = new FormData();
+						var folderPath = folderItem.storagePath.split("/");
+						folderPath.shift();
+						var folderName = folderPath.join("/");
+						body.append("directorypath", folderName)
+
+						fetch("/directory", {
+							method: "DELETE",
+							body: body
+						}).then((response)=>{
+							return response.text().then((text)=>{
+								if(!response.ok){
+									throw text
+								}
+								else return text;
+							})
+						}).then((value)=>{
+							console.log(value)
+							element.innerHTML = "";
+							loadDir(element, path)
+						}).catch((error)=>{
+							console.error("delete folder error:",error)
+						})
+					})
+					deleteA.textContent = "delete folder";
+				} else {
+					deleteA.addEventListener("click", (e)=>{
+						e.preventDefault();
+						const body = new FormData();
+						var filePath = folderItem.storagePath.split("/");
+						filePath.shift();
+						var fileName = filePath.join("/");
+
+						body.append("filepath", fileName)
+						fetch("/file", {
+							method: "DELETE",
+							body: body
+						}).then((response)=>{
+							return response.text().then((text)=>{
+								if(!response.ok){
+									throw text
+								}
+								else return text;
+							})
+						}).then((value)=>{
+							console.log(value)
+							element.innerHTML = "";
+							loadDir(element, path)
+						}).catch((error)=>{
+							console.error("delete file error:", error)
+						})
+					})
+					deleteA.textContent = "delete file";
+				}
+				li.appendChild(deleteDiv);
+
+				ul.appendChild(li);
+			})
+			element.appendChild(ul);
 		}).catch((error)=>{
 			console.error(error)
 		})
 
-	})
-
-	function loadDir(element, json){
-		var ul = document.createElement("ul");
-		json.forEach((folderItem)=>{
-			var li = document.createElement("li");
-			li.textContent = folderItem.name;
-			ul.appendChild(li);
-		})
-		element.appendChild(ul);
 	}
 </script>
 

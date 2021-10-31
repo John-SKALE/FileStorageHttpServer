@@ -28,7 +28,13 @@ async function uploadFile(originPath, targetPath){
 
   let account = account1.accountAddress;
 
-  const filePath = targetPath;
+  var filePath = targetPath;
+
+  if(filePath.substring(0, 1) === "/"){
+    // directoryPath = account1.accountAddress.substring(2) + directoryPath;
+    filePath = filePath.substring(1);
+  }
+
 
   var fileBuffer = await readFile(originPath);
   console.log("readFile", fileBuffer.length);

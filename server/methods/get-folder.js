@@ -31,5 +31,8 @@ async function getFiles(storagePath){
 
 
 module.exports = function(folderPath){
-  return getFiles(path.join(account1.accountAddress.substring(2), folderPath));
+  if(folderPath === "/"){
+    folderPath = account1.accountAddress.substring(2);
+  }
+  return getFiles(folderPath);
 }

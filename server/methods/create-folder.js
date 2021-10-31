@@ -22,6 +22,14 @@ async function createDirectory(directoryPath) {
     let privateKey = account1.privateKey;
     let account = account1.accountAddress;
 
+    if(directoryPath.substring(0, 1) === "/"){
+        // directoryPath = account1.accountAddress.substring(2) + directoryPath;
+        directoryPath = directoryPath.substring(1);
+    }
+
+    console.log("create folder:", directoryPath)
+
+
     const result = await filestorage.createDirectory(account, directoryPath, privateKey);
 
     console.log("create directory")

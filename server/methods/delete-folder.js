@@ -18,6 +18,8 @@ async function deleteDirectory(directoryPath) {
     let privateKey = account1.privateKey;
     let account = account1.accountAddress;
 
+    console.log("delete directoryPath:", directoryPath);
+
     await filestorage.deleteDirectory(account, directoryPath, privateKey);
 }
 
